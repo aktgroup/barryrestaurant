@@ -178,19 +178,43 @@
         fr: { cash: "Trésorerie", fund: "SAVE FOR FUTURE EQUIP FUNDS (IUL)", ledger: "📊 COMPTA", stock: "📦 STOCK", in: "Ventes", out: "Dépenses", history: "Historique", stockTitle: "Inventaire", vips: "📱 CLIENTS VIP", ev: "🏢 ÉVÉNEMENTS" }
     };
 
-    function setLang(lang) {
-        const t = i18n[lang];
-        document.getElementById('label-cash').innerText = t.cash;
-        document.getElementById('label-fund').innerText = t.fund;
-        document.getElementById('nav-ledger').innerText = t.ledger;
-        document.getElementById('nav-stock').innerText = t.stock;
-        document.getElementById('nav-events').innerText = t.ev;
-        document.getElementById('nav-vips').innerText = t.vips;
-        document.getElementById('title-in').innerText = t.in;
-        document.getElementById('title-out').innerText = t.out;
-        document.getElementById('title-history').innerText = t.history;
-        document.getElementById('title-stock').innerText = t.stockTitle;
-    }
+   function setLang(lang) {
+    const t = i18n[lang];
+    
+    // Top KPIs
+    document.getElementById('label-cash').innerText = lang === 'fr' ? "Trésorerie" : "Cash Position";
+    document.getElementById('label-fund').innerText = t.fund;
+
+    // Navigation Buttons
+    document.getElementById('nav-ledger').innerText = t.ledger;
+    document.getElementById('nav-stock').innerText = t.stock;
+    document.getElementById('nav-events').innerText = t.ev;
+    document.getElementById('nav-vips').innerText = t.vips;
+
+    // Ledger Tab
+    document.getElementById('title-in').innerText = lang === 'fr' ? "Ventes (Entrées)" : "Sales (Money In)";
+    document.getElementById('title-out').innerText = lang === 'fr' ? "Dépenses (Sorties)" : "Expenses (Money Out)";
+    document.getElementById('title-history').innerText = t.history;
+
+    // Stock Tab
+    document.getElementById('title-stock').innerText = t.stockTitle;
+
+    // Events Tab
+    document.getElementById('title-event-entry').innerText = lang === 'fr' ? "Suivi d'Événement" : "Event Tracker";
+    document.getElementById('title-event-history').innerText = lang === 'fr' ? "Historique des Événements" : "Event History";
+    document.getElementById('btn-event').innerText = lang === 'fr' ? "FERMER L'ÉVÉNEMENT" : "CLOSE EVENT";
+
+    // VIP Tab
+    document.getElementById('title-vips').innerText = lang === 'fr' ? "Clients VIP" : "VIP Loyalty";
+    document.getElementById('vipSearch').placeholder = lang === 'fr' ? "🔍 Chercher un numéro..." : "🔍 Search Phone...";
+
+    // Help Modal Title
+    document.getElementById('help-title').innerText = lang === 'fr' ? "👨‍🍳 Guide d'Utilisation" : "👨‍🍳 Owners' Manual";
+
+    // Refresh the lists to show updated text if needed
+    renderLedger();
+    renderEvents();
+}
 
     function switchTab(t) {
         document.querySelectorAll('.section').forEach(s => s.style.display='none');
