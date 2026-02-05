@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BARRY COMMAND PRO | GROWTH & PROTECTION</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root { --saffron: #d35400; --mustard: #f1c40f; --charcoal: #2c3e50; --cream: #fdfbf7; --success: #27ae60; --danger: #c0392b; --info: #3498db; }
+        body { font-family: 'Helvetica Neue', sans-serif; background: var(--cream); margin: 0; padding: 0; color: var(--charcoal); }
+        .header { background: var(--charcoal); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--mustard); position: relative; }
+        .lang-switch { position: absolute; top: 15px; right: 10px; }
+        .lang-btn { background: var(--mustard); border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.7rem; }
+        .kpi-row { display: flex; gap: 10px; padding: 15px; background: #fff; }
+        .kpi-box { flex: 1; padding: 10px; border-radius: 8px; border-left: 4px solid var(--saffron); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .kpi-label { font-size: 0.65rem; text-transform: uppercase; color: #7f8c8d; }
+        .kpi-val { font-size: 1.1rem; font-weight: 800; }
+        .main-nav { display: flex; justify-content: space-around; background: white; padding: 10px; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 1000; }
+        .nav-btn { background: none; border: none; font-weight: bold; font-size: 0.8rem; cursor: pointer; color: #95a5a6; }
+        .nav-btn.active { color: var(--saffron); border-bottom: 2px solid var(--saffron); }
+        .ledger-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
+        @media (max-width: 700px) { .ledger-grid { grid-template-columns: 1fr; } }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .card.in { border-top: 5px solid var(--success); }
+        .card.out { border-top: 5px solid var(--danger); }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .btn-action { color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .list-item { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+        .del-btn { color: var(--danger); font-weight: bold; cursor: pointer; border: 1px solid var(--danger); padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; }
+        .loyalty-badge { background: var(--mustard); color: #000; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>BARRY COMMAND PRO</h1>
+    <div style="font-size: 0.7rem; color: var(--mustard);">AKT GROUP LLC STRATEGIC LEDGER</div>
+    <div class="lang-switch">
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" onclick="setLang('fr')">FR</button>
+    </div>
+</div>
+
+<div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-label" id="label-cash">Trésorerie / Cash Position</div><div class="kpi-val" id="kpi-cash">$0</div></div>
+    <div class="kpi-box" style="border-left-color: var(--success);"><div class="kpi-label" id="label-fund">SAVE FOR FUTURE EQUIP FUNDS (IUL)</div><div class="kpi-val" id="kpi-fund" style="color:var(--success)">$0</div></div>
+</div>
+
+<nav class="main-nav">
+    <button class="nav-btn active" id="nav-ledger" onclick="switchTab('ledger')">📊 LEDGER</button>
+    <button class="nav-btn" id="nav-stock" onclick="switchTab('stock')">📦 STOCK</button>
+    <button class="nav-btn" id="nav-events" onclick="switchTab('events')">🏢 EVENTS</button>
+    <button class="nav-btn" id="nav-vips" onclick="switchTab('vips')">📱 VIPs</button>
+</nav>
+
+<div id="tab-ledger" class="section">
+    <div class="ledger-grid">
+        <div class="card in">
+            <h3 id="title-in">Sales (Money In)</h3>
+            <div id="reward-alert" style="display:none; background:#fff3cd; padding:10px; border-radius:4px; margin-bottom:10px; text-align:center; border:1px solid #ffeeba;">
+                <span id="reward-msg" style="color:#856404; font-weight:bold; font-size:0.8rem;"></span><br>
+                <button onclick="applyReward()" style="background:var(--success); color:white; border:none; padding:5px; border-radius:4px; margin-top:5px; cursor:pointer;">APPLY $10 REWARD</button>
+            </div>
+            <input type="number" id="in-amt" placeholder="Amount ($)">
+            <select id="in-menu-select"><option value="">-- Select Dish --</option></select>
+            <div style="display:flex; gap:5px;"><input type="text" id="new-dish-name" placeholder="Add Dish"><button onclick="addMenuItem()" style="background:var(--info); color:white; border:none; padding:0 10px; border-radius:4px;">+</button></div>
+            <input type="tel" id="in-phone" placeholder="Customer Phone" onkeyup="checkCustomerReward()">
+            <button class="btn-action" style="background:var(--success)" onclick="log('in')">LOG SALE</button>
+        </div>
+        <div class="card out">
+            <h3 id="title-out">Expenses (Money Out)</h3>
+            <input type="number" id="out-amt" placeholder="Amount ($)">
+            <input type="text" id="out-note" placeholder="Note / Item Name">
+            <label style="font-size:0.7rem;"><input type="checkbox" id="is-stock"> Add to Stock List?</label>
+            <input type="number" id="out-qty" placeholder="Quantity" style="display:none;">
+            <button class="btn-action" style="background:var(--danger)" onclick="log('out')">LOG EXPENSE</button>
+        </div>
+    </div>
+    <div class="card" style="margin:15px;">
+        <h3 id="title-history">History</h3>
+        <div style="display:flex; gap:5px; margin-bottom:10px;">
+            <button class="btn-action" style="background:var(--charcoal); flex:1;" onclick="exportCSV('ledger')">CSV</button>
+            <button class="btn-action" style="background:var(--charcoal); flex:1;" onclick="exportPDF('ledger')">PDF</button>
+        </div>
+        <div id="ledgerList"></div>
+    </div>
+</div>
+
+<div id="tab-stock" class="section" style="display:none;">
+    <div class="card">
+        <h3 id="title-stock">Stock Management</h3>
+        <button class="btn-action" style="background:var(--charcoal); margin-bottom:10px;" onclick="printShoppingList()">🖨️ PRINT SHOPPING LIST (LOW STOCK)</button>
+        <div id="stockList"></div>
+    </div>
+</div>
+
+<div id="tab-events" class="section" style="display:none;">
+    <div class="card">
+        <h3 id="title-event-entry">Event Tracker</h3>
+        <input type="text" id="e-name" placeholder="Event Name">
+        <input type="text" id="e-host" placeholder="Host (e.g. AKT Group)">
+        <input type="date" id="e-date">
+        <input type="number" id="e-rev" placeholder="Revenue ($)">
+        <input type="number" id="e-exp" placeholder="Expenses ($)">
+        <button class="btn-action" style="background:var(--info);" onclick="logEvent()" id="btn-event">CLOSE EVENT</button>
+    </div>
+    <div class="card">
+        <h3 id="title-event-history">Event History</h3>
+        <div style="display:flex; gap:5px; margin-bottom:10px;">
+            <button class="btn-action" style="background:var(--charcoal); flex:1;" onclick="exportCSV('events')">EVENT CSV</button>
+            <button class="btn-action" style="background:var(--charcoal); flex:1;" onclick="exportPDF('events')">EVENT PDF</button>
+        </div>
+        <div id="eventList"></div>
+    </div>
+</div>
+
+<div id="tab-vips" class="section" style="display:none;">
+    <div class="card">
+        <h3 id="title-vips">VIP Loyalty</h3>
+        <input type="text" id="vipSearch" placeholder="🔍 Search Phone..." onkeyup="searchVIPs()" style="margin-bottom:15px;">
+        <div id="vipList"></div>
+    </div>
+</div>
+
+<script>
+    let db = { 
+        ledger: JSON.parse(localStorage.getItem('b_l') || '[]'), 
+        customers: JSON.parse(localStorage.getItem('b_v') || '{}'), 
+        stock: JSON.parse(localStorage.getItem('b_s') || '[]'),
+        menu: JSON.parse(localStorage.getItem('b_m') || '[]'),
+        events: JSON.parse(localStorage.getItem('b_e') || '[]'),
+        fund: parseFloat(localStorage.getItem('b_f') || '0') 
+    };
+
+    const i18n = {
+        en: { cash: "Cash Position", fund: "SAVE FOR FUTURE EQUIP FUNDS (IUL)", ledger: "📊 LEDGER", stock: "📦 STOCK", in: "Sales", out: "Expenses", history: "History", stockTitle: "Inventory", vips: "📱 VIPs", ev: "🏢 EVENTS" },
+        fr: { cash: "Trésorerie", fund: "SAVE FOR FUTURE EQUIP FUNDS (IUL)", ledger: "📊 COMPTA", stock: "📦 STOCK", in: "Ventes", out: "Dépenses", history: "Historique", stockTitle: "Inventaire", vips: "📱 CLIENTS VIP", ev: "🏢 ÉVÉNEMENTS" }
+    };
+
+    function setLang(lang) {
+        const t = i18n[lang];
+        document.getElementById('label-cash').innerText = t.cash;
+        document.getElementById('label-fund').innerText = t.fund;
+        document.getElementById('nav-ledger').innerText = t.ledger;
+        document.getElementById('nav-stock').innerText = t.stock;
+        document.getElementById('nav-events').innerText = t.ev;
+        document.getElementById('nav-vips').innerText = t.vips;
+        document.getElementById('title-in').innerText = t.in;
+        document.getElementById('title-out').innerText = t.out;
+        document.getElementById('title-history').innerText = t.history;
+        document.getElementById('title-stock').innerText = t.stockTitle;
+    }
+
+    function switchTab(t) {
+        document.querySelectorAll('.section').forEach(s => s.style.display='none');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-'+t).style.display='block';
+        event.target.classList.add('active');
+        if(t === 'stock') renderStock();
+        if(t === 'vips') renderVIPs();
+        if(t === 'events') renderEvents();
+    }
+
+    function log(type) {
+        const amt = parseFloat(document.getElementById(type+'-amt').value);
+        let note = type === 'in' ? (document.getElementById('in-menu-select').value || "Sale") : document.getElementById('out-note').value;
+        const id = Date.now();
+        if(!amt || !note) return alert("Fill fields");
+
+        if(type === 'in') {
+            db.fund += (amt * 0.15);
+            const phone = document.getElementById('in-phone').value.trim();
+            if(phone) {
+                if(!db.customers[phone]) db.customers[phone] = { points: 0, total: 0 };
+                db.customers[phone].points += Math.floor(amt / 10);
+                db.customers[phone].total += amt;
+            }
+        } else if(type === 'out' && document.getElementById('is-stock').checked) {
+            const qty = parseInt(document.getElementById('out-qty').value) || 0;
+            const existing = db.stock.find(s => s.name.toLowerCase() === note.toLowerCase());
+            if(existing) existing.qty += qty; else db.stock.push({ name: note, qty });
+        }
+
+        db.ledger.unshift({ id, date: new Date().toLocaleDateString(), type, amt, note });
+        save(); updateKPIs(); renderLedger();
+        document.getElementById(type+'-amt').value = ""; document.getElementById(type+'-note').value = "";
+    }
+
+    function deleteLine(id) {
+        if(!confirm("Delete?")) return;
+        const line = db.ledger.find(l => l.id === id);
+        if(line && line.type === 'in') db.fund -= (line.amt * 0.15);
+        db.ledger = db.ledger.filter(l => l.id !== id);
+        save(); updateKPIs(); renderLedger();
+    }
+
+    function logEvent() {
+        const rev = parseFloat(document.getElementById('e-rev').value) || 0;
+        const exp = parseFloat(document.getElementById('e-exp').value) || 0;
+        const name = document.getElementById('e-name').value;
+        const host = document.getElementById('e-host').value;
+        const date = document.getElementById('e-date').value;
+        const income = rev - exp;
+        if(!name || !rev || !date) return alert("Fill event details");
+
+        db.ledger.unshift({ id: Date.now(), date, type: 'in', amt: income, note: `EVENT: ${name} (Host: ${host})` });
+        db.fund += (income * 0.15);
+        db.events.unshift({ name, host, date, rev, exp, income });
+        save(); updateKPIs(); renderLedger(); renderEvents(); switchTab('ledger');
+    }
+
+    function checkCustomerReward() {
+        const phone = document.getElementById('in-phone').value.trim();
+        const alertBox = document.getElementById('reward-alert');
+        if (phone && db.customers[phone] && Math.floor(db.customers[phone].points / 25) > 0) {
+            alertBox.style.display = 'block';
+            document.getElementById('reward-msg').innerText = `🎁 $${Math.floor(db.customers[phone].points / 25) * 10} REWARD AVAILABLE!`;
+        } else alertBox.style.display = 'none';
+    }
+
+    function applyReward() {
+        const phone = document.getElementById('in-phone').value.trim();
+        const amtField = document.getElementById('in-amt');
+        if (parseFloat(amtField.value) < 10) return alert("Sale must be $10+");
+        db.customers[phone].points -= 25;
+        amtField.value = (parseFloat(amtField.value) - 10).toFixed(2);
+        document.getElementById('reward-alert').style.display = 'none';
+        save(); alert("Reward Applied!");
+    }
+
+    function renderVIPs(filter = "") {
+        const sorted = Object.entries(db.customers).sort((a,b) => b[1].points - a[1].points);
+        document.getElementById('vipList').innerHTML = sorted.filter(([p]) => p.includes(filter)).map(([p, d]) => `
+            <div class="list-item"><div><strong>${p}</strong></div><div style="text-align:right"><span class="loyalty-badge">${d.points} PTS</span><br><small>$${Math.floor(d.points/25)*10} Reward</small></div></div>`).join('');
+    }
+
+    function renderStock() {
+        document.getElementById('stockList').innerHTML = db.stock.map(s => `
+            <div class="list-item"><div>${s.name}</div><div class="stock-ctrl"><b>${s.qty}</b> <button onclick="updateStock('${s.name}', -1)">-</button><button onclick="updateStock('${s.name}', 1)">+</button></div></div>`).join('');
+    }
+
+    function renderEvents() {
+        document.getElementById('eventList').innerHTML = db.events.map(e => `<div class="list-item"><div><strong>${e.name}</strong></div><div style="text-align:right; color:green;">+$${e.income.toFixed(2)}</div></div>`).join('');
+    }
+
+    function updateStock(n, d) { const i = db.stock.find(s => s.name === n); if(i) { i.qty += d; if(i.qty < 0) i.qty = 0; save(); renderStock(); } }
+
+    function addMenuItem() { const n = document.getElementById('new-dish-name').value.trim(); if(n && !db.menu.includes(n)) { db.menu.push(n); save(); updateMenuDropdown(); document.getElementById('new-dish-name').value = ""; } }
+
+    function updateMenuDropdown() { const sel = document.getElementById('in-menu-select'); if(!sel) return; sel.innerHTML = '<option value="">-- Dish --</option>' + db.menu.map(m => `<option value="${m}">${m}</option>`).join(''); }
+
+    function exportCSV(t) { const d = t === 'ledger' ? db.ledger : db.events; XLSX.writeFile(XLSX.utils.book_new(XLSX.utils.book_append_sheet(XLSX.utils.book_new(), XLSX.utils.json_to_sheet(d), "Data")), `Barry_${t}.xlsx`); }
+
+    function exportPDF(t) { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.text(`BARRY RESTAURANT - ${t.toUpperCase()}`, 10, 10); (t === 'ledger' ? db.ledger : db.events).slice(0,25).forEach((l, i) => doc.text(`${l.date} | $${l.amt || l.income} | ${l.note || l.name}`, 10, 20+(i*8))); doc.save(`Barry_${t}.pdf`); }
+
+    function updateKPIs() {
+        const tin = db.ledger.filter(l => l.type === 'in').reduce((s, a) => s + a.amt, 0);
+        const tout = db.ledger.filter(l => l.type === 'out').reduce((s, a) => s + a.amt, 0);
+        document.getElementById('kpi-cash').innerText = "$" + (tin - tout).toFixed(2);
+        document.getElementById('kpi-fund').innerText = "$" + db.fund.toFixed(2);
+    }
+
+    function renderLedger() { document.getElementById('ledgerList').innerHTML = db.ledger.map(l => `<div class="list-item"><div><span style="color:${l.type==='in'?'green':'red'}">●</span> <b>$${l.amt}</b> - ${l.note}</div><div><span class="del-btn" onclick="deleteLine(${l.id})">X</span></div></div>`).join(''); }
+
+    function save() { localStorage.setItem('b_l', JSON.stringify(db.ledger)); localStorage.setItem('b_v', JSON.stringify(db.customers)); localStorage.setItem('b_s', JSON.stringify(db.stock)); localStorage.setItem('b_m', JSON.stringify(db.menu)); localStorage.setItem('b_e', JSON.stringify(db.events)); localStorage.setItem('b_f', db.fund); }
+
+    function searchVIPs() { renderVIPs(document.getElementById('vipSearch').value); }
+
+    document.getElementById('is-stock').addEventListener('change', (e) => document.getElementById('out-qty').style.display = e.target.checked ? 'block' : 'none');
+
+    setLang('en'); updateKPIs(); renderLedger(); updateMenuDropdown();
+</script>
+</body>
+</html>
